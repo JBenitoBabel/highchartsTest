@@ -130,8 +130,10 @@ export class HomePage implements OnInit {
     prices: number[],
     title: string
   ): Highcharts.Chart {
+    const colors = this.getColorsForValues(prices);
+
     return Highcharts.chart(containerId, {
-      chart: { type: 'column' },  // Cambiado de 'areaspline' a 'column'
+      chart: { type: 'column' },
       title: { text: title },
       xAxis: { categories, title: { text: 'Hora del Día' } },
       yAxis: { title: { text: 'Precios' }, min: 0 },
@@ -139,8 +141,10 @@ export class HomePage implements OnInit {
         {
           type: 'column',
           name: 'Precio',
-          data: prices,
-          color: '#7cb5ec',  // Color de las columnas
+          data: prices.map((price, index) => ({
+            y: price,
+            color: colors[index],  // Asignamos el color correspondiente
+          })),
         },
       ],
       tooltip: {
@@ -169,6 +173,24 @@ export class HomePage implements OnInit {
     console.log('[generateRandomPrices]', values);
     return values;
   }
+
+  // Función para obtener los colores basados en los valores de los precios
+  getColorsForValues(prices: number[]): string[] {
+    // Ordenar los precios para determinar los rangos
+    const sortedPrices = [...prices].sort((a, b) => a - b);
+    const lowThreshold = sortedPrices[Math.floor(prices.length / 3)]; // Umbral para el rango bajo
+    const highThreshold = sortedPrices[Math.floor(2 * prices.length / 3)]; // Umbral para el rango alto
+
+    return prices.map((price) => {
+      if (price <= lowThreshold) {
+        return 'green';  // valores más bajos
+      } else if (price <= highThreshold) {
+        return 'orange';  // valores intermedios
+      } else {
+        return 'red';  // valores más altos
+      }
+    });
+  }  
 
   // Control Botones
   previousPoint(chart: Highcharts.Chart, prices: number[], currentIndex: number): number {
