@@ -131,20 +131,23 @@ export class HomePage implements OnInit {
     title: string
   ): Highcharts.Chart {
     const colors = this.getColorsForValues(prices);
+    const heights = this.getHeightsForValues(prices);
 
     return Highcharts.chart(containerId, {
       chart: { type: 'column' },
       title: { text: title },
       xAxis: { categories, title: { text: 'Hora del Día' } },
-      yAxis: { title: { text: 'Precios' }, min: 0 },
+      yAxis: {
+        visible: false,
+      },
       series: [
         {
           type: 'column',
-          name: 'Precio',
           data: prices.map((price, index) => ({
-            y: price,
+            y: heights[index],
             color: colors[index],  // Asignamos el color correspondiente
           })),
+          showInLegend: false
         },
       ],
       tooltip: {
@@ -174,6 +177,7 @@ export class HomePage implements OnInit {
     return values;
   }
 
+  // Asignar colores y alturas
   // Función para obtener los colores basados en los valores de los precios
   getColorsForValues(prices: number[]): string[] {
     // Ordenar los precios para determinar los rangos
@@ -191,6 +195,23 @@ export class HomePage implements OnInit {
       }
     });
   }  
+
+  // Función para calcular las alturas entre 1 y 3 para cada precio
+  getHeightsForValues(prices: number[]): number[] {
+    const sortedPrices = [...prices].sort((a, b) => a - b);
+    const lowThreshold = sortedPrices[Math.floor(prices.length / 3)];
+    const highThreshold = sortedPrices[Math.floor(2 * prices.length / 3)];
+
+    return prices.map((price) => {
+      if (price <= lowThreshold) {
+        return 1;  // Baja altura para valores más bajos
+      } else if (price <= highThreshold) {
+        return 2;  // Altura intermedia
+      } else {
+        return 3;  // Alta altura para valores más altos
+      }
+    });
+  }
 
   // Control Botones
   previousPoint(chart: Highcharts.Chart, prices: number[], currentIndex: number): number {
