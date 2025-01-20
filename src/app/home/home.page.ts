@@ -18,51 +18,82 @@ export class HomePage implements OnInit {
 
   Highcharts: typeof Highcharts = Highcharts;
 
+  // Gráfico 24 horas
+  chart24!: Highcharts.Chart;
+  currentIndex24: number = 0;
+  categories24: string[] = [];
+  prices24: number[] = [];
+
+  // Gráfico 12 horas
+  chart12!: Highcharts.Chart;
+  currentIndex12: number = 0;
+  categories12: string[] = [];
+  prices12: number[] = [];
+
   ngOnInit() {
-    this.createChart(24);
-    this.createChart(12);
+    this.twentyFourHours();
+    this.twelveHours();
+  }
+  
+  twentyFourHours() {
+    this.categories24 = this.generateQuarterHours(24);
+    this.prices24 = this.generateRandomPrices(96);
+
+    this.chart24 = this.createChart('chart-container-24', this.categories24, this.prices24, '24 horas', (index) => {
+      this.currentIndex24 = index;
+      this.updateTooltip(this.chart24, this.prices24, this.currentIndex24);
+    });
+  }
+  
+  twelveHours() {
+    this.categories12 = this.generateQuarterHours(12);
+    this.prices12 = this.generateRandomPrices(48);
+
+    this.chart12 = this.createChart('chart-container-12', this.categories12, this.prices12, '12 horas', (index) => {
+      this.currentIndex12 = index;
+      this.updateTooltip(this.chart12, this.prices12, this.currentIndex12);
+    });
   }
 
-  createChart(hour: number) {
-    Highcharts.chart(`chart-container${hour}`, {
-      chart: {
-        type: 'areaspline',
-      },
-      title: {
-        text: 'Precios por Cuartos de Hora',
-      },
-      xAxis: {
-        categories: this.generateQuarterHours(hour),
-        title: {
-          text: 'Hora del Día',
-        },
-      },
-      yAxis: {
-        title: {
-          text: 'Precios',
-        },
-        min: 0,
-      },
-      series: [
-        {
-          type: 'areaspline',
-          name: 'Precio',
-          data: this.generateRandomPrices(hour),
-          fillOpacity: 0, // Esto hace que las áreas no sean visibles
-        },
-      ],
-      plotOptions: {
-        areaspline: {
-          marker: {
-            enabled: false, // Opcional: oculta los puntos
+  createChart(
+    containerId: string,
+    categories: string[],
+    prices: number[],
+    title: string,
+    onPointClick: (index: number) => void
+  ): Highcharts.Chart {
+      return Highcharts.chart(containerId, {
+        chart: { type: 'areaspline' },
+        title: { text: title },
+        xAxis: { categories, title: { text: 'Hora del Día' } },
+        yAxis: { title: { text: 'Precios' }, min: 0 },
+        series: [
+          {
+            type: 'areaspline',
+            name: 'Precio',
+            data: prices,
+            fillOpacity: 0,
+            marker: { enabled: false },
+          },
+        ],
+        tooltip: {
+          shared: true,
+          formatter: function () {
+            return `<b>${this.x}</b>: ${this.y} €`;
           },
         },
-      },
-      tooltip: {
-        shared: true,
-        valueSuffix: ' €',
-      },
-    });
+        plotOptions: {
+          series: {
+            point: {
+              events: {
+                click: (event) => {
+                  onPointClick(event.point.index);
+                },
+              },
+            },
+          },
+        },
+      });
   }
 
   generateQuarterHours(hours: number): string[] {
@@ -76,14 +107,39 @@ export class HomePage implements OnInit {
     return times;
   }
 
-  generateRandomPrices(hours: number): number[] {
-    const points = (hours == 24) ? 96 : 48;
+  generateRandomPrices(points: number): number[] {
     const values: number[] = Array.from({ length: points }, () => Math.floor(Math.random() * 100));
     console.log('[generateRandomPrices]', values);
     return values;
   }
 
+  // Control Botones
+  previousPoint(chart: Highcharts.Chart, prices: number[], currentIndex: number): number {
+    if (currentIndex > 0) {
+      currentIndex--;
+      this.updateTooltip(chart, prices, currentIndex);
+    }
+    return currentIndex;
+  }
 
+  nextPoint(chart: Highcharts.Chart, prices: number[], currentIndex: number): number {
+    if (currentIndex < prices.length - 1) {
+      currentIndex++;
+      this.updateTooltip(chart, prices, currentIndex);
+    }
+    return currentIndex;
+  }
+
+  updateTooltip(chart: Highcharts.Chart, prices: number[], currentIndex: number) {
+    const point = chart.series[0].data[currentIndex];
+    if (point) {
+      point.setState('hover');
+      chart.tooltip.refresh(point);
+      chart.xAxis[0].drawCrosshair(undefined, point);
+    }
+  }
+
+  /*
   refresh(ev: any) {
     setTimeout(() => {
       (ev as RefresherCustomEvent).detail.complete();
@@ -93,4 +149,5 @@ export class HomePage implements OnInit {
   getMessages(): Message[] {
     return this.data.getMessages();
   }
+    */
 }

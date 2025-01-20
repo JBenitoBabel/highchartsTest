@@ -1,4 +1,4 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>
       Test OMIE
@@ -8,9 +8,64 @@
 
 <ion-content [fullscreen]="true">
 
-  <div class="charts" id="chart-container24"></div>
-  <div class="charts" id="chart-container12"></div>
-  
+  <div class="charts" id="chart-container-24" style="width: 100%; height: 400px;"></div>
+  <ion-footer>
+    <ion-grid>
+      <ion-row class="ion-justify-content-center ion-align-items-center">
+        <ion-col size="auto">
+          <ion-button
+            fill="outline"
+            color="primary"
+            [disabled]="currentIndex24 === 0"
+              (click)="currentIndex24 = previousPoint(chart24, prices24, currentIndex24)"
+          >
+            Anterior
+          </ion-button>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button
+            fill="outline"
+            color="primary"
+            [disabled]="currentIndex24 === prices24.length - 1"
+              (click)="currentIndex24 = nextPoint(chart24, prices24, currentIndex24)"
+          >
+            Siguiente
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-footer>
+
+
+  <div class="charts" id="chart-container-12"></div>
+  <ion-footer>
+    <ion-grid>
+      <ion-row class="ion-justify-content-center ion-align-items-center">
+        <ion-col size="auto">
+          <ion-button
+            fill="outline"
+            color="secondary"
+            [disabled]="currentIndex12 === 0"
+            (click)="currentIndex12 = previousPoint(chart12, prices12, currentIndex12)"
+          >
+            Anterior
+          </ion-button>
+        </ion-col>
+        <ion-col size="auto">
+          <ion-button
+            fill="outline"
+            color="secondary"
+            [disabled]="currentIndex12 === prices12.length - 1"
+            (click)="currentIndex12 = nextPoint(chart12, prices12, currentIndex12)"
+          >
+            Siguiente
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-footer>
+
+
   <!-- <ion-list>
     @for (message of getMessages(); track message) {
       <app-message [message]="message"></app-message>
