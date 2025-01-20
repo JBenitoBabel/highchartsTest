@@ -30,9 +30,22 @@ export class HomePage implements OnInit {
   categories12: string[] = [];
   prices12: number[] = [];
 
+  // Gráfico Columnas 24 horas
+  chartColumn24!: Highcharts.Chart;
+  categoriesColumn24: string[] = [];
+  pricesColumn24: number[] = [];
+
+  // Gráfico Columnas 12 horas
+  chartColumn12!: Highcharts.Chart;
+  categoriesColumn12: string[] = [];
+  pricesColumn12: number[] = [];
+
   ngOnInit() {
     this.twentyFourHours();
     this.twelveHours();
+
+    this.column24HourChart();
+    this.column12HourChart();
   }
   
   twentyFourHours() {
@@ -55,6 +68,21 @@ export class HomePage implements OnInit {
     });
   }
 
+  column24HourChart() {
+    this.categories24 = this.generateQuarterHours(24);
+    this.prices24 = this.generateRandomPrices(96);
+
+    this.chart24 = this.createChartColumn('chart-column-container-24', this.categories24, this.prices24, '24 horas');
+  }
+
+  column12HourChart() {
+    this.categories12 = this.generateQuarterHours(12);
+    this.prices12 = this.generateRandomPrices(48);
+
+    this.chart12 = this.createChartColumn('chart-column-container-12', this.categories12, this.prices12, '12 horas');
+  }
+
+  //Graficos
   createChart(
     containerId: string,
     categories: string[],
@@ -96,6 +124,35 @@ export class HomePage implements OnInit {
       });
   }
 
+  createChartColumn(
+    containerId: string,
+    categories: string[],
+    prices: number[],
+    title: string
+  ): Highcharts.Chart {
+    return Highcharts.chart(containerId, {
+      chart: { type: 'column' },  // Cambiado de 'areaspline' a 'column'
+      title: { text: title },
+      xAxis: { categories, title: { text: 'Hora del Día' } },
+      yAxis: { title: { text: 'Precios' }, min: 0 },
+      series: [
+        {
+          type: 'column',
+          name: 'Precio',
+          data: prices,
+          color: '#7cb5ec',  // Color de las columnas
+        },
+      ],
+      tooltip: {
+        shared: true,
+        formatter: function () {
+          return `<b>${this.x}</b>: ${this.y} €`;
+        },
+      },
+    });
+  }
+
+  // Generadores de datos
   generateQuarterHours(hours: number): string[] {
     const times: string[] = [];
     for (let hour = 0; hour < hours; hour++) {
