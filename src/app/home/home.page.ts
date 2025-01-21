@@ -129,6 +129,8 @@ export class HomePage implements OnInit {
     const colors = this.getColorsForValues(prices);
     const heights = this.getHeightsForValues(prices);
 
+    const scaledHeights = heights.map((height) => height * 0.25);
+
     return Highcharts.chart(containerId, {
       chart: { 
         type: 'column',
@@ -144,7 +146,7 @@ export class HomePage implements OnInit {
         {
           type: 'column',
           data: prices.map((price, index) => ({
-            y: heights[index],
+            y: scaledHeights[index],
             color: colors[index],  // Asignamos el color correspondiente
           })),
           showInLegend: false,
@@ -157,6 +159,15 @@ export class HomePage implements OnInit {
           return `<b>${this.x}</b>: ${this.y} €`;
         },
       },
+      plotOptions: {
+        column: {
+          borderRadius: 2,
+          grouping: false,
+          dataGrouping: {
+            enabled: false
+          }
+        }
+      }
     });
   }
 
@@ -188,11 +199,11 @@ export class HomePage implements OnInit {
 
     return prices.map((price) => {
       if (price <= lowThreshold) {
-        return 'green';  // valores más bajos
+        return '#25DF6F';  // valores más bajos
       } else if (price <= highThreshold) {
-        return 'orange';  // valores intermedios
+        return '#FFBB6A';  // valores intermedios
       } else {
-        return 'red';  // valores más altos
+        return '#FF4F4F';  // valores más altos
       }
     });
   }  
