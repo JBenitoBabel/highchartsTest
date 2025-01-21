@@ -1,8 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { RefresherCustomEvent } from '@ionic/angular';
-import { MessageComponent } from '../message/message.component';
-
-import { DataService, Message } from '../services/data.service';
+import { Component, OnInit } from '@angular/core';
 
 import * as Highcharts from 'highcharts';
 
@@ -13,7 +9,6 @@ import * as Highcharts from 'highcharts';
   standalone: false,
 })
 export class HomePage implements OnInit {
-  private data = inject(DataService);
   constructor() {}
 
   Highcharts: typeof Highcharts = Highcharts;
@@ -41,6 +36,11 @@ export class HomePage implements OnInit {
   pricesColumn12: number[] = [];
 
   ngOnInit() {
+    this.categories24 = this.generateQuarterHours(24);
+    this.prices24 = this.generateRandomPrices(96);
+    this.categories12 = this.generateQuarterHours(12);
+    this.prices12 = this.generateRandomPrices(48);
+
     this.twentyFourHours();
     this.twelveHours();
 
@@ -49,37 +49,25 @@ export class HomePage implements OnInit {
   }
   
   twentyFourHours() {
-    this.categories24 = this.generateQuarterHours(24);
-    this.prices24 = this.generateRandomPrices(96);
-
     this.chart24 = this.createChart('chart-container-24', this.categories24, this.prices24, '24 horas', (index) => {
       this.currentIndex24 = index;
-      this.updateTooltip(this.chart24, this.prices24, this.currentIndex24);
+      this.updateTooltip(this.chart24, this.currentIndex24);
     });
   }
   
   twelveHours() {
-    this.categories12 = this.generateQuarterHours(12);
-    this.prices12 = this.generateRandomPrices(48);
-
     this.chart12 = this.createChart('chart-container-12', this.categories12, this.prices12, '12 horas', (index) => {
       this.currentIndex12 = index;
-      this.updateTooltip(this.chart12, this.prices12, this.currentIndex12);
+      this.updateTooltip(this.chart12, this.currentIndex12);
     });
   }
 
   column24HourChart() {
-    this.categories24 = this.generateQuarterHours(24);
-    this.prices24 = this.generateRandomPrices(96);
-
-    this.chart24 = this.createChartColumn('chart-column-container-24', this.categories24, this.prices24, '24 horas');
+    this.chartColumn24 = this.createChartColumn('chart-column-container-24', this.categories24, this.prices24, '24 horas');
   }
 
   column12HourChart() {
-    this.categories12 = this.generateQuarterHours(12);
-    this.prices12 = this.generateRandomPrices(48);
-
-    this.chart12 = this.createChartColumn('chart-column-container-12', this.categories12, this.prices12, '12 horas');
+    this.chartColumn12 = this.createChartColumn('chart-column-container-12', this.categories12, this.prices12, '12 horas');
   }
 
   //Graficos
@@ -101,7 +89,15 @@ export class HomePage implements OnInit {
             name: 'Precio',
             data: prices,
             fillOpacity: 0,
-            marker: { enabled: false },
+            marker: { 
+              enabled: false,
+              states: {
+                hover: {
+                  enabled: true,
+                  radius: 6, // Ajusta el tamaño
+                },
+              },
+            },
           },
         ],
         tooltip: {
@@ -134,11 +130,15 @@ export class HomePage implements OnInit {
     const heights = this.getHeightsForValues(prices);
 
     return Highcharts.chart(containerId, {
-      chart: { type: 'column' },
+      chart: { 
+        type: 'column',
+        height: 300
+      },
       title: { text: title },
       xAxis: { categories, title: { text: 'Hora del Día' } },
       yAxis: {
         visible: false,
+        max: 3
       },
       series: [
         {
@@ -147,7 +147,8 @@ export class HomePage implements OnInit {
             y: heights[index],
             color: colors[index],  // Asignamos el color correspondiente
           })),
-          showInLegend: false
+          showInLegend: false,
+          pointWidth: 4 // ancho de las columnas
         },
       ],
       tooltip: {
@@ -214,10 +215,10 @@ export class HomePage implements OnInit {
   }
 
   // Control Botones
-  previousPoint(chart: Highcharts.Chart, prices: number[], currentIndex: number): number {
+  previousPoint(chart: Highcharts.Chart, currentIndex: number): number {
     if (currentIndex > 0) {
       currentIndex--;
-      this.updateTooltip(chart, prices, currentIndex);
+      this.updateTooltip(chart, currentIndex);
     }
     return currentIndex;
   }
@@ -225,29 +226,23 @@ export class HomePage implements OnInit {
   nextPoint(chart: Highcharts.Chart, prices: number[], currentIndex: number): number {
     if (currentIndex < prices.length - 1) {
       currentIndex++;
-      this.updateTooltip(chart, prices, currentIndex);
+      this.updateTooltip(chart, currentIndex);
     }
     return currentIndex;
   }
 
-  updateTooltip(chart: Highcharts.Chart, prices: number[], currentIndex: number) {
+  updateTooltip(chart: Highcharts.Chart, currentIndex: number) {
+    // Limpia el estado hover de todos los puntos
+    //chart.series[0].data.forEach((p) => p.setState('')); 
+    // Obtén el punto actual
     const point = chart.series[0].data[currentIndex];
     if (point) {
+      // Establece el estado hover en el punto actual
       point.setState('hover');
+      // Actualiza el tooltip para mostrar el punto actual
       chart.tooltip.refresh(point);
+       // Dibuja la crosshair en el punto actual
       chart.xAxis[0].drawCrosshair(undefined, point);
     }
   }
-
-  /*
-  refresh(ev: any) {
-    setTimeout(() => {
-      (ev as RefresherCustomEvent).detail.complete();
-    }, 3000);
-  }
-
-  getMessages(): Message[] {
-    return this.data.getMessages();
-  }
-    */
 }

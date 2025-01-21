@@ -17,7 +17,7 @@
             fill="outline"
             color="primary"
             [disabled]="currentIndex24 === 0"
-              (click)="currentIndex24 = previousPoint(chart24, prices24, currentIndex24)"
+              (click)="currentIndex24 = previousPoint(chart24, currentIndex24)"
           >
             Anterior
           </ion-button>
@@ -45,7 +45,7 @@
             fill="outline"
             color="secondary"
             [disabled]="currentIndex12 === 0"
-            (click)="currentIndex12 = previousPoint(chart12, prices12, currentIndex12)"
+            (click)="currentIndex12 = previousPoint(chart12, currentIndex12)"
           >
             Anterior
           </ion-button>
@@ -64,13 +64,8 @@
     </ion-grid>
   </ion-footer>
 
+  <!-- columns -->
   <div class="charts ion-margin-bottom" id="chart-column-container-24"></div>
   <div class="charts" id="chart-column-container-12"></div>
 
-
-  <!-- <ion-list>
-    @for (message of getMessages(); track message) {
-      <app-message [message]="message"></app-message>
-    }
-  </ion-list> -->
 </ion-content>
